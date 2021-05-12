@@ -12,3 +12,19 @@ NOTE: If you run this several times you will be saving the same information in t
 To prevent this, you should add a check to see if the record already exists before inserting it.
 
 '''
+import requests
+from pprint import pprint
+import sqlalchemy
+
+engine = sqlalchemy.create_engine("mysql+pymysql://root:pwd@localhost/jim")
+connection = engine.connect()
+metadata = sqlalchemy.MetaData()
+task = sqlalchemy.Table('task', metadata, autoload=True, autoload_with=engine)
+
+url = "http://demo.codingnomads.co:8080/tasks_api/tasks"
+response = requests.get(url)
+data = response.json()
+
+for item in data['data']:
+	query = sqlalchemy.insert(task).values(id=item['id'], userId=item['userId'], name=item['name'], description=item['description'], completed=item['completed'])
+	result_proxy = connection.execute(query)
